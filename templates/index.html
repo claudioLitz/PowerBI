@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel ESG & Utilidades Industriais - Grupo 6</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bi-bg: #f8fafc;
+            --bi-card-bg: #ffffff;
+            --bi-border: #e2e8f0;
+            --bi-header-bg: #0f172a;
+            --bi-text-main: #0f172a;
+            --bi-text-muted: #64748b;
+            --bi-primary: #2563eb;
+            --bi-success: #10b981;
+            --bi-warning: #f59e0b;
+            --bi-danger: #ef4444;
+            --bi-purple: #8b5cf6;
+            --bi-info: #06b6d4;
+        }
+
+        body { 
+            background-color: var(--bi-bg); 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--bi-text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header BI */
+        .bi-header {
+            background-color: var(--bi-header-bg);
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .bi-brand-title {
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            font-size: 1.15rem;
+        }
+
+        .bi-brand-subtitle {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Switch Container Horário de Pico */
+        #picoContainer {
+            transition: all 0.3s ease;
+            border: 1px solid #334155;
+        }
+
+        .pico-active { 
+            background-color: #fef08a !important; 
+            border: 2px solid #eab308 !important; 
+            color: #854d0e !important; 
+            animation: pulse-pico 1.5s infinite; 
+        }
+
+        @keyframes pulse-pico { 
+            0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.5); } 
+            70% { box-shadow: 0 0 0 10px rgba(234, 179, 8, 0); } 
+            100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); } 
+        }
+
+        /* Section Titles */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .section-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-badge-total { background-color: #dbeafe; color: #1e40af; }
+        .section-badge-avg { background-color: #f1f5f9; color: #475569; }
+
+        .section-title-text {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        /* KPI Cards Style BI */
+        .kpi-card { 
+            background: var(--bi-card-bg);
+            border: 1px solid var(--bi-border); 
+            border-radius: 12px; 
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+            padding: 1.25rem;
+            height: 100%;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card:hover {
+            box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        /* Top Border Accents */
+        .kpi-card-kwh { border-top: 4px solid var(--bi-primary); }
+        .kpi-card-custo { border-top: 4px solid var(--bi-success); }
+        .kpi-card-co2 { border-top: 4px solid #334155; }
+        .kpi-card-unid { border-top: 4px solid var(--bi-info); }
+        
+        .kpi-card-avg-1 { border-left: 4px solid var(--bi-primary); }
+        .kpi-card-avg-2 { border-left: 4px solid var(--bi-success); }
+        .kpi-card-avg-3 { border-left: 4px solid #64748b; }
+        .kpi-card-avg-4 { border-left: 4px solid var(--bi-warning); }
+
+        .kpi-label {
+            font-size: 0.725rem;
+            font-weight: 600;
+            color: var(--bi-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.35rem;
+        }
+
+        .kpi-value {
+            font-size: 1.65rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--bi-text-main);
+            margin-bottom: 0.25rem;
+            line-height: 1.2;
+        }
+
+        .kpi-subtext {
+            font-size: 0.725rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .kpi-icon-wrapper {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .icon-blue { background-color: #eff6ff; color: #2563eb; }
+        .icon-green { background-color: #ecfdf5; color: #10b981; }
+        .icon-dark { background-color: #f1f5f9; color: #334155; }
+        .icon-cyan { background-color: #ecfeff; color: #0891b2; }
+        .icon-amber { background-color: #fffbeb; color: #d97706; }
+
+        /* Chart Container BI */
+        .chart-container { 
+            background: var(--bi-card-bg); 
+            border: 1px solid var(--bi-border);
+            border-radius: 12px; 
+            padding: 1.25rem; 
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04); 
+            margin-bottom: 20px; 
+            height: 100%;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .chart-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        /* Custom Badges in Legend */
+        .bi-pill {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .bi-pill-primary { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .bi-pill-success { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        .bi-pill-danger { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+        .bi-pill-purple { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+
+        /* Live Indicator */
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse-dot 1.8s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Alert Styling */
+        .bi-alert {
+            background-color: #fffbeb;
+            border: 1px solid #fef3c7;
+            border-left: 5px solid #f59e0b;
+            border-radius: 10px;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header com Botão de Horário de Pico -->
+    <nav class="navbar navbar-expand-lg navbar-dark bi-header px-4 py-2.5 shadow-sm">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-primary bg-opacity-20 p-2 rounded-3 text-primary d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                    <i class="fa-solid fa-chart-line fs-5 text-white"></i>
+                </div>
+                <div>
+                    <div class="bi-brand-title text-white d-flex align-items-center gap-2">
+                        Gestão Energética & ESG
+                        <span class="badge bg-secondary bg-opacity-50 text-light fw-normal fs-8">Executive BI</span>
+                    </div>
+                    <div class="bi-brand-subtitle">Parque Fabril • Grupo 6</div>
+                </div>
+            </div>
+            
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-none d-md-flex align-items-center gap-2 text-white-50 fs-7 me-2">
+                    <span class="pulse-dot"></span>
+                    <small class="text-light fw-medium">Real-Time Sync</small>
+                </div>
+
+                <!-- BOTÃO FORÇAR HORÁRIO DE PICO -->
+                <div class="d-flex align-items-center bg-secondary text-white px-3 py-1.5 rounded-pill shadow-sm" id="picoContainer">
+                    <div class="form-check form-switch m-0 me-2 d-flex align-items-center">
+                        <input class="form-check-input style-toggle mt-0" type="checkbox" id="togglePico" onchange="alternarHorarioPico()" style="cursor: pointer;">
+                        <label class="form-check-label fw-semibold text-white ms-2" for="togglePico" id="picoLabel" style="cursor: pointer; font-size: 0.85rem;">
+                            ⚡ Horário de Pico: DESLIGADO
+                        </label>
+                    </div>
+                    <span class="badge bg-light text-dark ms-2 fw-bold" id="tarifaBadge">R$ 0,65 / kWh</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 py-4">
+        
+        <!-- Banner de Alerta em Tempo Real -->
+        <div id="alertBanner" class="alert bi-alert d-none d-flex align-items-center mb-4 p-3 shadow-sm" role="alert">
+            <div class="bg-warning bg-opacity-20 text-warning rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                <i class="fa-solid fa-triangle-exclamation fs-5 text-danger"></i>
+            </div>
+            <div>
+                <strong class="text-dark">Alerta do Comitê ESG:</strong> <span class="text-secondary">Alerta de consumo fantasma ou desperdício de utilidades detectado no parque fabril!</span>
+            </div>
+        </div>
+
+        <!-- SEÇÃO 1: ACUMULADO HISTÓRICO TOTAL -->
+        <div class="section-header">
+            <span class="section-badge section-badge-total">Visão Global</span>
+            <h5 class="section-title-text">1. Visão Geral Acumulada (Histórico Total)</h5>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="kpi-card kpi-card-kwh">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="kpi-label">Consumo Elétrico Total</div>
+                            <div class="kpi-value" id="totalKwh">0.00 kWh</div>
+                            <div class="kpi-subtext"><i class="fa-solid fa-arrow-trend-up me-1 text-primary"></i>Energia total auditada</div>
+                        </div>
+                        <div class="kpi-icon-wrapper icon-blue">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="kpi-card kpi-card-custo">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="kpi-label">Custo Financeiro Acumulado</div>
+                            <div class="kpi-value" id="totalCusto">R$ 0.00</div>
+                            <div class="kpi-subtext"><i class="fa-solid fa-circle-check me-1 text-success"></i>Tarifação dinâmica</div>
+                        </div>
+                        <div class="kpi-icon-wrapper icon-green">
+                            <i class="fa-solid fa-sack-dollar"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="kpi-card kpi-card-co2">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="kpi-label">Emissões CO₂ Totais</div>
+                            <div class="kpi-value" id="totalCo2">0.00 kg</div>
+                            <div class="kpi-subtext"><i class="fa-solid fa-leaf me-1 text-secondary"></i>Pegada de carbono total</div>
+                        </div>
+                        <div class="kpi-icon-wrapper icon-dark">
+                            <i class="fa-solid fa-smog"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="kpi-card kpi-card-unid">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="kpi-label">Produção Total</div>
+                            <div class="kpi-value" id="totalUnidades">0 und</div>
+                            <div class="kpi-subtext"><i class="fa-solid fa-industry me-1 text-info"></i>Volume processado</div>
+                        </div>
+                        <div class="kpi-icon-wrapper icon-cyan">
+                            <i class="fa-solid fa-industry"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEÇÃO 2: MÉDIAS OPERACIONAIS -->
+        <div class="section-header">
+            <span class="section-badge section-badge-avg">Eficiência</span>
+            <h5 class="section-title-text">2. Médias Operacionais por Ciclo</h5>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="kpi-card kpi-card-avg-1">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="kpi-label">Média Elétrica / Ciclo</div>
+                            <div class="kpi-value" id="avgKwh">0.00 kWh</div>
+                            <div class="kpi-subtext">Carga média por intervalo</div>
+                        </div>
+                        <div class="kpi-icon-wrapper icon-blue">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="kpi-card kpi-card-avg-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="kpi-label">Média de Custo / Ciclo</div>
+                            <div class="kpi-value" id="avgCusto">R$ 0.00</div>
+                            <div class="kpi-subtext">Gasto médio estimado</div>
+                        </div>
+                        <div class="kpi-icon-wrapper icon-green">
+                            <i class="fa-solid fa-coins"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="kpi-card kpi-card-avg-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="kpi-label">Média CO₂ / Ciclo</div>
+                            <div class="kpi-value" id="avgCo2">0.00 kg</div>
+                            <div class="kpi-subtext">Impacto médio por ciclo</div>
+                        </div>
+                        <div class="kpi-icon-wrapper icon-dark">
+                            <i class="fa-solid fa-cloud"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="kpi-card kpi-card-avg-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="kpi-label">Consumo Específico Médio</div>
+                            <div class="kpi-value" id="avgConsumoEspec">0.00 kWh/u</div>
+                            <div class="kpi-subtext">Índice de intensidade energética</div>
+                        </div>
+                        <div class="kpi-icon-wrapper icon-amber">
+                            <i class="fa-solid fa-gauge-high"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRÁFICOS UNIFICADOS -->
+        <div class="row g-3">
+            <!-- Gráfico 1: Consumo, Custo Acumulado e Derivadas do Custo e CO2 -->
+            <div class="col-lg-8">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <h5 class="chart-title">Evolução Integrada: Energia, Custo e Derivadas de Variação</h5>
+                            <small class="text-muted fs-8">Série temporal contínua em tempo real</small>
+                        </div>
+                        <span class="badge bg-dark bg-opacity-10 text-dark fw-bold border border-secondary border-opacity-20 px-2 py-1">
+                            <i class="fa-solid fa-rotate me-1 text-primary"></i> Real-time
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="bi-pill bi-pill-primary"><i class="fa-solid fa-bolt"></i> Consumo Físico (kWh)</span>
+                        <span class="bi-pill bi-pill-success"><i class="fa-solid fa-sack-dollar"></i> Custo Acumulado (R$)</span>
+                        <span class="bi-pill bi-pill-danger"><i class="fa-solid fa-chart-line"></i> 📈 Variação Custo (Disparo = Ruim)</span>
+                        <span class="bi-pill bi-pill-purple"><i class="fa-solid fa-leaf"></i> 🌱 Variação CO₂ (Taxa Emissão)</span>
+                    </div>
+
+                    <div style="position: relative; height: 320px; width: 100%;">
+                        <canvas id="chartEletricidade"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico 2: Proporção das Utilidades -->
+            <div class="col-lg-4">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <h5 class="chart-title">Consumo de Utilidades (Ar & Água)</h5>
+                            <small class="text-muted fs-8">Telemetria industrial</small>
+                        </div>
+                        <span class="badge bg-light text-secondary border">Última leitura</span>
+                    </div>
+                    <div style="position: relative; height: 320px; width: 100%; display: flex; align-items: center; justify-content: center;">
+                        <canvas id="chartUtilidades"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts JavaScript -->
+    <script>
+        const TARIFA_NORMAL = 0.65;
+        const TARIFA_PICO = 1.95;
+        
+        let forcarHorarioPico = false;
+        let mapaCustosRegistros = {};
+        let acumuladoTotalGlobal = 0;
+
+        let chartEletricidade, chartUtilidades;
+
+        function alternarHorarioPico() {
+            const toggle = document.getElementById('togglePico');
+            const picoContainer = document.getElementById('picoContainer');
+            const picoLabel = document.getElementById('picoLabel');
+            const tarifaBadge = document.getElementById('tarifaBadge');
+
+            forcarHorarioPico = toggle.checked;
+
+            if (forcarHorarioPico) {
+                picoContainer.classList.add('pico-active');
+                picoContainer.classList.remove('bg-secondary');
+                picoLabel.innerText = "⚡ Horário de Pico: ATIVADO";
+                picoLabel.classList.add('text-dark');
+                picoLabel.classList.remove('text-white');
+                tarifaBadge.innerText = "R$ 1,95 / kWh (3x)";
+                tarifaBadge.className = "badge bg-danger text-white ms-2";
+            } else {
+                picoContainer.classList.remove('pico-active');
+                picoContainer.classList.add('bg-secondary');
+                picoLabel.innerText = "⚡ Horário de Pico: DESLIGADO";
+                picoLabel.classList.add('text-white');
+                picoLabel.classList.remove('text-dark');
+                tarifaBadge.innerText = "R$ 0,65 / kWh";
+                tarifaBadge.className = "badge bg-light text-dark ms-2";
+            }
+        }
+
+        function inicializarGraficos() {
+            // Estilo instantâneo (deslocamento para a direita sem suavização)
+            Chart.defaults.animation = false;
+            Chart.defaults.elements.line.tension = 0;
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            Chart.defaults.color = '#64748b';
+
+            // Gráfico Integrado
+            const ctx1 = document.getElementById('chartEletricidade').getContext('2d');
+            chartEletricidade = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Consumo Físico (kWh)',
+                            data: [],
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                            borderWidth: 2,
+                            fill: true,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Custo Acumulado (R$)',
+                            data: [],
+                            borderColor: '#10b981',
+                            borderWidth: 3,
+                            fill: false,
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: 'Variação Custo (dC/dt)',
+                            data: [],
+                            borderColor: '#ef4444',
+                            borderWidth: 2,
+                            borderDash: [4, 4],
+                            pointRadius: 3,
+                            fill: false,
+                            yAxisID: 'yVariação' // Eixo sem exibição lateral
+                        },
+                        {
+                            label: 'Variação CO₂ (dCO₂/dt)',
+                            data: [],
+                            borderColor: '#8b5cf6',
+                            borderWidth: 2,
+                            pointRadius: 3,
+                            fill: false,
+                            yAxisID: 'yVariação' // Eixo sem exibição lateral
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            titleFont: { family: 'Inter', size: 12, weight: 'bold' },
+                            bodyFont: { family: 'Inter', size: 12 },
+                            padding: 10,
+                            cornerRadius: 8
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { size: 10 } }
+                        },
+                        y: { 
+                            type: 'linear', 
+                            position: 'left', 
+                            title: { display: true, text: 'Energia (kWh)', font: { size: 11, weight: '600' } },
+                            grid: { color: '#f1f5f9' }
+                        },
+                        y1: { 
+                            type: 'linear', 
+                            position: 'right', 
+                            title: { display: true, text: 'Custo Acumulado (R$)', font: { size: 11, weight: '600' } }, 
+                            grid: { drawOnChartArea: false } 
+                        },
+                        yDerivada: { type: 'linear', display: false, grid: { drawOnChartArea: false } } // OCULTO nas laterais
+                    }
+                }
+            });
+
+            // Gráfico de Utilidades
+            const ctx2 = document.getElementById('chartUtilidades').getContext('2d');
+            chartUtilidades = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Ar Comprimido (m³)', 'Água (m³)'],
+                    datasets: [{
+                        label: 'Volume Atual',
+                        data: [0, 0],
+                        backgroundColor: ['#06b6d4', '#10b981'],
+                        borderRadius: 6,
+                        barThickness: 45
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            cornerRadius: 8
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: '#f1f5f9' }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        async function carregarDadosAPI() {
+            try {
+                const response = await fetch('/api/dados');
+                const resultado = await response.json();
+
+                if (resultado.status === 'success' && resultado.data.length > 0) {
+                    const dados = resultado.data;
+                    const agregados = resultado.historico_geral;
+
+                    let derivadaCustoSerie = [];
+                    let derivadaCo2Serie = [];
+
+                    for (let i = 0; i < dados.length; i++) {
+                        const reg = dados[i];
+                        const regId = reg.id;
+
+                        if (!mapaCustosRegistros[regId]) {
+                            const tarifaMomento = forcarHorarioPico ? TARIFA_PICO : TARIFA_NORMAL;
+                            const kwh = reg.kwh_eletricidade || 0;
+                            const custoInc = kwh * tarifaMomento;
+
+                            acumuladoTotalGlobal += custoInc;
+
+                            mapaCustosRegistros[regId] = {
+                                kwh: kwh,
+                                tarifa: tarifaMomento,
+                                custoIncremental: custoInc,
+                                custoAcumulado: acumuladoTotalGlobal
+                            };
+                        }
+
+                        // Variação do Custo (R$/leitura)
+                        derivadaCustoSerie.push(mapaCustosRegistros[regId].custoIncremental.toFixed(2));
+                        // Variação da Emissão de CO2 (kg CO2/leitura)
+                        derivadaCo2Serie.push((reg.emissao_co2_kg || 0).toFixed(2));
+                    }
+
+                    const labels = dados.map(d => d.timestamp_processamento ? (d.timestamp_processamento.split(' ') || d.timestamp_processamento) : d.id);
+                    const kwhData = dados.map(d => d.kwh_eletricidade || 0);
+                    const custoSerie = dados.map(d => mapaCustosRegistros[d.id] ? mapaCustosRegistros[d.id].custoAcumulado.toFixed(2) : "0.00");
+
+                    // TOTAIS
+                    document.getElementById('totalKwh').innerText = `${(agregados.total_kwh || 0).toFixed(1)} kWh`;
+                    document.getElementById('totalCusto').innerText = `R$ ${acumuladoTotalGlobal.toFixed(2)}`;
+                    document.getElementById('totalCo2').innerText = `${(agregados.total_co2 || 0).toFixed(1)} kg`;
+                    document.getElementById('totalUnidades').innerText = `${agregados.total_unidades || 0} und`;
+
+                    // MÉDIAS
+                    document.getElementById('avgKwh').innerText = `${(agregados.media_kwh || 0).toFixed(2)} kWh`;
+                    const mediaCustoCiclo = (agregados.total_registros > 0) ? (acumuladoTotalGlobal / agregados.total_registros) : 0;
+                    document.getElementById('avgCusto').innerText = `R$ ${mediaCustoCiclo.toFixed(2)}`;
+                    document.getElementById('avgCo2').innerText = `${(agregados.media_co2 || 0).toFixed(2)} kg`;
+                    document.getElementById('avgConsumoEspec').innerText = `${(agregados.media_consumo_especifico || 0).toFixed(2)} kWh/u`;
+
+                    // ALERTA
+                    const temAlerta = dados.some(d => d.alerta_consumo_fantasma === 1 || d.alerta_consumo_fantasma === true);
+                    const banner = document.getElementById('alertBanner');
+                    if (temAlerta) {
+                        banner.classList.remove('d-none');
+                    } else {
+                        banner.classList.add('d-none');
+                    }
+
+                    // ATUALIZAÇÃO DO GRÁFICO PRINCIPAL
+                    chartEletricidade.data.labels = labels;
+                    chartEletricidade.data.datasets[0].data = kwhData;
+                    chartEletricidade.data.datasets[1].data = custoSerie;
+                    chartEletricidade.data.datasets[2].data = derivadaCustoSerie;
+                    chartEletricidade.data.datasets[3].data = derivadaCo2Serie;
+                    chartEletricidade.update();
+
+                    // ATUALIZAÇÃO DO GRÁFICO DE UTILIDADES
+                    const ultimoRegistro = dados[dados.length - 1];
+                    chartUtilidades.data.datasets[0].data = [
+                        ultimoRegistro.m3_ar_comprimido || 0,
+                        ultimoRegistro.m3_agua || 0
+                    ];
+                    chartUtilidades.update();
+                }
+            } catch (err) {
+                console.error("Erro ao buscar dados do banco de dados:", err);
+            }
+        }
+
+        window.onload = () => {
+            inicializarGraficos();
+            carregarDadosAPI();
+            setInterval(carregarDadosAPI, 3000);
+        };
+    </script>
+</body>
+</html>
